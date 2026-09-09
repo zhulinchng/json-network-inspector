@@ -1,17 +1,39 @@
-# JSON Network Inspector — Documentation
+# JSON Network Inspector
 
-A Manifest V3 Chrome extension that inspects JSON exchanged between pages and
-their servers. Two capture surfaces share one viewer:
+A Manifest V3 Chrome extension that inspects JSON exchanged between pages
+and their servers. Vanilla JS, zero dependencies, no build step. All data
+stays on-device — no accounts, no backend, and the extension makes no
+network calls of its own.
+
+Two capture surfaces share one viewer:
 
 - **DevTools “JSON” tab** — full-fidelity bodies, headers, and timing via
   `chrome.devtools.network`. Requires DevTools open on the inspected page.
 - **Side panel (“page hook”)** — always-on capture via an opt-in
   fetch/XHR patch. Works with DevTools closed.
 
-Vanilla JS, zero dependencies, no build step. All data stays on-device; no
-accounts, no backend, no network calls made by the extension itself.
+## Use it
 
-## Reading map
+1. Open `chrome://extensions`, enable Developer mode, **Load unpacked** →
+   select the repo root.
+2. Open DevTools on any page → **JSON** tab, then reload the page.
+3. Or click the extension icon to open the side panel → **Enable capture
+   on this tab**, accept host access, and trigger page traffic.
+
+`test-fixture.html` (repo root) fires sample fetch/XHR traffic for trying
+both surfaces.
+
+## Develop
+
+```sh
+npm test               # node:test suite, stdlib only — keep green
+node --check <file>    # syntax check; there is no build step
+```
+
+`package.json` exists only for ESM + the test script; Chrome ignores it.
+Agent-oriented working rules live in `AGENTS.md`.
+
+## Docs
 
 | File | What it covers |
 |------|----------------|
@@ -22,40 +44,9 @@ accounts, no backend, no network calls made by the extension itself.
 | `service-worker.md` | Relay, per-tab buffers, badge, lifecycle, navigation re-inject |
 | `data-model.md` | Record shape, size caps, store ring, settings |
 | `viewer-ui.md` | Shared inspector: list, detail tabs, tree view, toolbar, themes |
-| `testing.md` | Automated suite (30 tests), fixture page, manual checklist |
+| `testing.md` | Automated suite, fixture page, manual checklist |
 | `security-privacy.md` | Local-only posture, CSP compliance, validation layers, spoofing analysis |
 
-## Repository map
-
-```text
-manifest.json            MV3 manifest (action, devtools_page, side_panel, …)
-background/service-worker.js   ephemeral coordinator: relay + buffers + badge
-content/hook-main.js     MAIN-world fetch/XHR patch (page context, no chrome.*)
-content/bridge.js        isolated-world relay: postMessage → runtime.sendMessage
-devtools/devtools.html|js      registers the JSON panel (extension-root path)
-devtools/panel/          panel shell + capture logic (own in-memory buffer)
-sidepanel/               panel shell + capture bar, tab follow, port relay
-src/                     shared model/store/viewer (imported by both surfaces)
-test/                    node:test suite (stdlib only) + fake-dom.js harness
-test-fixture.html        manual verification page (7 traffic buttons)
-package.json             ESM marker + `npm test` only; Chrome ignores it
-```
-
-## Quickstart (maintainer)
-
-```sh
-npm test                                   # 30/30 via node --test test/
-node --check <file>                        # syntax check, no build exists
-# Load unpacked: chrome://extensions → Developer mode → Load unpacked → repo root
-```
-
-## Conventions used in these docs
-
-- `source:` / `badge:` labels (`DevTools`, `page hook`) are literal UI strings.
-- Byte caps are named constants; the tables in `data-model.md` give exact values.
-- “Verified against” footers name the files (and tests) each claim was checked against.
-- External Chrome API claims cite the reference docs (see `manifest-permissions.md`
-  sources); behavior claims cite code symbols.
-
----
-*Verified against: `manifest.json`, `package.json`, repo tree at commit `4436e8c`.*
+Conventions in these docs: `source:`/`badge:` labels are literal UI strings;
+byte caps are named constants (exact values in `data-model.md`); “Verified
+against” footers name the files each claim was checked against.
