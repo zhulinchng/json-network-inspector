@@ -1,0 +1,9 @@
+{
+  "name": "json-network-inspector",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 extension for inspecting JSON network traffic. This file exists only so Node treats sources as ESM for `npm test`; Chrome ignores it.",
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

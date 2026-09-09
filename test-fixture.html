@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JSON Inspector test fixture (dev-only, not part of the extension UI)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    button { font: inherit; margin: 4px; padding: 8px 14px; cursor: pointer; }
+    #log { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>JSON Inspector fixture</h1>
+  <p>Use this page to verify capture: open DevTools → JSON tab, then fire traffic. Or enable capture in the side panel.</p>
+  <button id="fireFetch">Fire fetch (JSON)</button>
+  <button id="fireXhr">Fire XHR (JSON)</button>
+  <button id="fireHtml">Fire fetch (HTML, should be ignored)</button>
+  <button id="fireError">Fire fetch (404 JSON-ish)</button>
+  <button id="firePost">Fire POST with JSON body (Request tab)</button>
+  <button id="firePostReq">Fire POST via Request object</button>
+  <button id="fireXhrPost">Fire XHR POST with JSON body</button>
+  <div id="log" aria-live="polite">ready</div>
+  <script>
+    const log = document.getElementById('log');
+    function say(msg) { log.textContent += '\n' + msg; }
+
+    document.getElementById('fireFetch').addEventListener('click', async () => {
+      const t0 = performance.now();
+      const res = await fetch('https://jsonplaceholder.typicode.com/users/1', {
+        headers: { Accept: 'application/json' },
+      });
+      const body = await res.json();
+      say(`fetch ${res.status} in ${Math.round(performance.now() - t0)}ms: ${body.name}`);
+    });
+
+    document.getElementById('fireXhr').addEventListener('click', () => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts/1');
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.addEventListener('load', () => {
+        say(`xhr ${xhr.status}: ${(xhr.responseText || '').slice(0, 80)}…`);
+      });
+      xhr.send();
+    });
+
+    document.getElementById('fireHtml').addEventListener('click', async () => {
+      const res = await fetch('https://example.com/');
+      say(`html fetch ${res.status} (extension must ignore)`);
+    });
+
+    document.getElementById('fireError').addEventListener('click', async () => {
+      const res = await fetch('https://jsonplaceholder.typicode.com/nope-missing-thing');
+      say(`error fetch ${res.status} (should appear with 4xx badge)`);
+    });
+
+    document.getElementById('firePost').addEventListener('click', async () => {
+      const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'hello', userId: 7 }),
+      });
+      const body = await res.json();
+      say(`post ${res.status}: sent title=hello, got id=${body.id}`);
+    });
+
+    document.getElementById('firePostReq').addEventListener('click', async () => {
+      const req = new Request('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ via: 'request-object' }),
+      });
+      const res = await fetch(req);
+      say(`request-object post ${res.status}`);
+    });
+
+    document.getElementById('fireXhrPost').addEventListener('click', () => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://jsonplaceholder.typicode.com/posts');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.addEventListener('load', () => say(`xhr post ${xhr.status}`));
+      xhr.send(JSON.stringify({ via: 'xhr' }));
+    });
+  </script>
+</body>
+</html>

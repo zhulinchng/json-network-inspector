@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "JSON Network Inspector",
+  "version": "0.1.0",
+  "description": "Inspect JSON traffic: a JSON tab in DevTools plus a side panel that captures page fetch/XHR without DevTools open.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Open JSON Network Inspector",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "devtools_page": "devtools/devtools.html",
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "permissions": ["sidePanel", "storage", "scripting", "tabs"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"]
+}
